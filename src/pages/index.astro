@@ -1,15 +1,68 @@
 ---
+const res = await fetch(import.meta.env.WORDPRESS_URL, {
+  method: 'post',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    query: `
+      query PostsQuery {
+        posts {
+          nodes {
+            date
+            excerpt
+            id
+            title
+            uri
+          }
+        }
+      }
+    `,
+  }),
+})
+
+interface Post {
+  date: string
+  excerpt: string
+  id: string
+  title: string
+  uri: string
+}
+
+const { data } = await res.json()
+
+const posts = data.posts.nodes as Post[]
 ---
 
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Astro</title>
+  </head>
+  <body>
+    <h1>Astro</h1>
+    <p>Welcome to Astro!</p>
+    <h2>Posts!</h2>
+
+    <ol>
+      {
+        posts.map((post) => (
+          <li>
+            <a href={post.uri}>
+              <h3>{post.title}</h3>
+            </a>
+            <span>
+              <time datetime={post.date}>
+                {new Date(post.date).toLocaleDateString()}
+              </time>
+            </span>
+            <p set:html={post.excerpt} />
+          </li>
+        ))
+      }
+    </ol>
+  </body>
 </html>
